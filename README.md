@@ -1,4 +1,4 @@
-# ComeFundMe
+# D' LibrareX
 
 ## Description
 This is a very simple book library dapp where users can:
