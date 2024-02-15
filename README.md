@@ -9,7 +9,7 @@ This is a very simple book library dapp where users can:
 * Buy books from the Library
 
 ## Live Demo
-[ComeFundMe](https://freedteck.github.io/D-librarex/)
+[D' LibrareX](https://freedteck.github.io/D-librarex/)
 
 ## Usage
 
