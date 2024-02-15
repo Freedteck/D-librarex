@@ -42,7 +42,7 @@
       }
     </style>
 
-    <title>Street Food Kigali</title>
+    <title>D' LibrareX</title>
   </head>
 
   <body>
@@ -50,7 +50,7 @@
 
       <nav class="navbar bg-white navbar-light">
         <div class="container-fluid">
-          <span class="navbar-brand m-0 h4 fw-bold">Street Food Kigali</span>
+          <span class="navbar-brand m-0 h4 fw-bold">D' LibrareX</span>
           <span class="nav-link border rounded-pill bg-light">
             <span id="balance">0</span>
             cUSD
@@ -68,7 +68,7 @@
           data-bs-toggle="modal"
           data-bs-target="#addModal"
         >
-          Add product
+          Add book
         </a>
       </div>
 
@@ -86,7 +86,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="newProductModalLabel">New Product</h5>
+            <h5 class="modal-title" id="newProductModalLabel">New Book</h5>
             <button
               type="button"
               class="btn-close"
@@ -100,9 +100,17 @@
                 <div class="col">
                   <input
                     type="text"
-                    id="newProductName"
+                    id="newTitle"
                     class="form-control mb-2"
-                    placeholder="Enter name of product"
+                    placeholder="Enter Title of book"
+                  />
+                </div>
+                <div class="col">
+                  <input
+                    type="text"
+                    id="newAuthor"
+                    class="form-control mb-2"
+                    placeholder="Enter Book author"
                   />
                 </div>
                 <div class="col">
@@ -116,17 +124,10 @@
                 <div class="col">
                   <input
                     type="text"
-                    id="newProductDescription"
+                    id="newRead"
                     class="form-control mb-2"
-                    placeholder="Enter product description"
-                  />
-                </div>
-                <div class="col">
-                  <input
-                    type="text"
-                    id="newLocation"
-                    class="form-control mb-2"
-                    placeholder="Enter location"
+                    value="Have you Read this Book? No"
+                    disabled
                   />
                 </div>
                 <div class="col">
@@ -154,7 +155,7 @@
               data-bs-dismiss="modal"
               id="newProductBtn"
             >
-              Add product
+              Add book
             </button>
           </div>
         </div>
