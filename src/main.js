@@ -3,6 +3,7 @@ import { newKitFromWeb3 } from "@celo/contractkit"
 import BigNumber from "bignumber.js"
 import marketplaceAbi from "../contract/BookLibrary.abi.json"
 import erc20Abi from "../contract/erc20.abi.json"
+import blockies from 'ethereum-blockies';
 
 const ERC20_DECIMALS = 18
 const MPContractAddress = "0x247e486c949C428831F59917927cBF2714E614C2"
@@ -12,50 +13,66 @@ let kit
 let contract
 let books = []
 
+
+// Removed code for brevity
+
+// Added error handling and comments
 const connectCeloWallet = async function () {
   if (window.celo) {
-    notification("⚠️ Please approve this DApp to use it.")
+    notification("⚠️ Please approve this DApp to use it.");
     try {
-      await window.celo.enable()
-      notificationOff()
+      await window.celo.enable();
+      notificationOff();
 
-      const web3 = new Web3(window.celo)
-      kit = newKitFromWeb3(web3)
+      const web3 = new Web3(window.celo);
+      kit = newKitFromWeb3(web3);
 
-      const accounts = await kit.web3.eth.getAccounts()
-      kit.defaultAccount = accounts[0]
+      const accounts = await kit.web3.eth.getAccounts();
+      kit.defaultAccount = accounts[0];
 
-      contract = new kit.web3.eth.Contract(marketplaceAbi, MPContractAddress)
+      contract = new kit.web3.eth.Contract(marketplaceAbi, MPContractAddress);
     } catch (error) {
-      notification(`⚠️ ${error}.`)
+      notification(`⚠️ ${error}.`);
     }
   } else {
-    notification("⚠️ Please install the CeloExtensionWallet.")
+    notification("⚠️ Please install the CeloExtensionWallet.");
+  }
+};
+
+// Added error handling
+async function approve(_price) {
+  const cUSDContract = new kit.web3.eth.Contract(erc20Abi, cUSDContractAddress);
+
+  try {
+    const result = await cUSDContract.methods
+      .approve(MPContractAddress, _price)
+      .send({ from: kit.defaultAccount });
+    return result;
+  } catch (error) {
+    throw new Error(`Failed to approve: ${error}`);
   }
 }
 
-async function approve(_price) {
-  const cUSDContract = new kit.web3.eth.Contract(erc20Abi, cUSDContractAddress)
-
-  const result = await cUSDContract.methods
-    .approve(MPContractAddress, _price)
-    .send({ from: kit.defaultAccount })
-  return result
-}
-
+// Added error handling
 const getBalance = async function () {
-  const totalBalance = await kit.getTotalBalance(kit.defaultAccount)
-  const cUSDBalance = totalBalance.cUSD.shiftedBy(-ERC20_DECIMALS).toFixed(2)
-  document.querySelector("#balance").textContent = cUSDBalance
-}
+  try {
+    const totalBalance = await kit.getTotalBalance(kit.defaultAccount);
+    const cUSDBalance = totalBalance.cUSD.shiftedBy(-ERC20_DECIMALS).toFixed(2);
+    document.querySelector("#balance").textContent = cUSDBalance;
+  } catch (error) {
+    throw new Error(`Failed to get balance: ${error}`);
+  }
+};
 
+// Added error handling
 const getBooks = async function () {
-  const _booksLength = await contract.methods.getBooksLength().call()
-  const _books = []
-  for (let i = 0; i < _booksLength; i++) {
-    let _book = new Promise(async (resolve, reject) => {
-      let p = await contract.methods.getBook(i).call()
-      resolve({
+  try {
+    const _booksLength = await contract.methods.getBooksLength().call();
+    const _books = [];
+
+    for (let i = 0; i < _booksLength; i++) {
+      const p = await contract.methods.getBook(i).call();
+      _books.push({
         index: i,
         owner: p[0],
         title: p[1],
@@ -64,26 +81,33 @@ const getBooks = async function () {
         price: new BigNumber(p[4]),
         sold: p[5],
         isRead: p[6],
-      })
-    })
-    _books.push(_book)
+      });
+    }
+
+    books = _books;
+    renderBooks();
+  } catch (error) {
+    throw new Error(`Failed to fetch books: ${error}`);
   }
-  books = await Promise.all(_books)
-
-  renderbooks()
-}
-
-const renderbooks = async () => {
-  const undeletedbooks = books.filter(product => !product.deleted);
-
-  document.getElementById("marketplace").innerHTML = "";
-  undeletedbooks.forEach(_book => {
-    const newDiv = document.createElement("div");
-    newDiv.className = "col-md-4";
-    newDiv.innerHTML = productTemplate(_book);
-    document.getElementById("marketplace").appendChild(newDiv);
-  });
 };
+
+// Added error handling
+const renderBooks = async () => {
+  try {
+    const undeletedBooks = books.filter(book => !book.deleted);
+
+    document.getElementById("marketplace").innerHTML = "";
+    undeletedBooks.forEach(book => {
+      const newDiv = document.createElement("div");
+      newDiv.className = "col-md-4";
+      newDiv.innerHTML = productTemplate(book);
+      document.getElementById("marketplace").appendChild(newDiv);
+    });
+  } catch (error) {
+    throw new Error(`Failed to render books: ${error}`);
+  }
+};
+
 
 function productTemplate(_book) {
   return `
