@@ -2,6 +2,7 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
+// ERC-20 Token Interface
 interface IERC20Token {
     function transfer(address, uint256) external returns (bool);
 
@@ -27,30 +28,35 @@ interface IERC20Token {
     );
 }
 
+// BookLibrary contract
 contract BookLibrary {
+    uint256 internal booksLength = 0;
+    address internal cUsdTokenAddress =
+        0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
 
-    uint internal booksLength = 0;
-    address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
-
+    // Struct to represent a book
     struct Book {
         address payable owner;
         string title;
         string author;
         string image;
-        uint price;
-        uint sold;
+        uint256 price;
+        uint256 sold;
         bool isRead;
     }
 
-    mapping(uint => Book) internal books;
+    // Mapping to store books by index
+    mapping(uint256 => Book) internal books;
 
+    // Function to add a new book to the library
     function addBook(
         string memory _title,
         string memory _author,
         string memory _image,
-        uint _price
+        uint256 _price
     ) public {
-        uint _sold = 0;
+        uint256 _sold = 0;
+        // Create a new book and add it to the mapping
         books[booksLength] = Book(
             payable(msg.sender),
             _title,
@@ -60,22 +66,30 @@ contract BookLibrary {
             _sold,
             false
         );
+
+        // Increment the total number of books
         booksLength++;
     }
 
-    function getBooksLength() public view returns (uint) {
+    // Function to get the total number of books in the library
+    function getBooksLength() public view returns (uint256) {
         return booksLength;
     }
 
-    function getBook(uint _index) public view returns (
-        address payable,
-        string memory, 
-        string memory, 
-        string memory,
-        uint, 
-        uint,
-        bool
-    ) {
+    // Function to get details of a specific book by index
+    function getBook(uint256 _index)
+        public
+        view
+        returns (
+            address payable,
+            string memory,
+            string memory,
+            string memory,
+            uint256,
+            uint256,
+            bool
+        )
+    {
         return (
             books[_index].owner,
             books[_index].title,
@@ -87,30 +101,47 @@ contract BookLibrary {
         );
     }
 
-    function removeBook(uint _index) public {
-        require(msg.sender == books[_index].owner, "You can only remove your own books.");
-        books[_index] = books[booksLength - 1];
+    // Function to remove a book from the library by index
+    function removeBook(uint256 _index) public {
+        require(_index < booksLength, "Invalid index.");
+        require(
+            msg.sender == books[_index].owner,
+            "You can only remove your own books."
+        );
+
+        // Move the next book to the index to be deleted
+        for (uint256 i = _index; i < booksLength - 1; i++) {
+            books[i] = books[i + 1];
+        }
+
+        // Delete the last book (optional, as it will be overwritten in the next step)
+        delete books[booksLength - 1];
+
+        // Decrease the length of the array
         booksLength--;
     }
 
-    function markAsRead(uint _index) public {
-        require(msg.sender == books[_index].owner, "You can only mark your own books.");
+    // Function to mark a book as read by index
+    function markAsRead(uint256 _index) public {
+        // require(msg.sender == books[_index].owner, "You can only mark your own books.");
         books[_index].isRead = true;
     }
 
-    function markAsUnread(uint _index) public {
-        require(msg.sender == books[_index].owner, "You can only mark your own books.");
+    // Function to mark a book as Unread by index
+    function markAsUnread(uint256 _index) public {
+        // require(msg.sender == books[_index].owner, "You can only mark your own books.");
         books[_index].isRead = false;
     }
 
-    function buyBook(uint _index) public payable {
+    // Function to buy a book by index
+    function buyBook(uint256 _index) public payable {
         require(
-          IERC20Token(cUsdTokenAddress).transferFrom(
-            msg.sender,
-            books[_index].owner,
-            books[_index].price
-          ),
-          "Transfer failed."
+            IERC20Token(cUsdTokenAddress).transferFrom(
+                msg.sender,
+                books[_index].owner,
+                books[_index].price
+            ),
+            "Transfer failed."
         );
         books[_index].sold++;
     }
