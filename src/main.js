@@ -1,21 +1,17 @@
-// Import necessary libraries and contract ABIs
-import Web3 from "web3";
-import { newKitFromWeb3 } from "@celo/contractkit";
-import BigNumber from "bignumber.js";
-import marketplaceAbi from "../contract/BookLibrary.abi.json";
-import erc20Abi from "../contract/erc20.abi.json";
+import Web3 from "web3"
+import { newKitFromWeb3 } from "@celo/contractkit"
+import BigNumber from "bignumber.js"
+import marketplaceAbi from "../contract/BookLibrary.abi.json"
+import erc20Abi from "../contract/erc20.abi.json"
 
-// Constants for ERC20 decimals, contract addresses, and contract instances
-const ERC20_DECIMALS = 18;
-const MPContractAddress = "0x8dc37A19cCeF8699BbA6e0Ac582aD31774AdbfF5";
-const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
+const ERC20_DECIMALS = 18
+const MPContractAddress = "0x247e486c949C428831F59917927cBF2714E614C2"
+const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
 
-// Global variables to store contract instances and books data
-let kit;
-let contract;
-let books = [];
+let kit
+let contract
+let books = []
 
-// Function to connect Celo wallet using Celo Extension Wallet
 const connectCeloWallet = async function () {
   if (window.celo) {
     notification("⚠️ Please approve this DApp to use it.");
@@ -38,31 +34,27 @@ const connectCeloWallet = async function () {
   }
 };
 
-// Function to approve spending of cUSD tokens
 async function approve(_price) {
   const cUSDContract = new kit.web3.eth.Contract(erc20Abi, cUSDContractAddress);
 
   const result = await cUSDContract.methods
     .approve(MPContractAddress, _price)
-    .send({ from: kit.defaultAccount });
-  return result;
+    .send({ from: kit.defaultAccount })
+  return result
 }
 
-// Function to get the cUSD balance of the connected wallet
 const getBalance = async function () {
-  const totalBalance = await kit.getTotalBalance(kit.defaultAccount);
-  const cUSDBalance = totalBalance.cUSD.shiftedBy(-ERC20_DECIMALS).toFixed(2);
-  document.querySelector("#balance").textContent = cUSDBalance;
-};
+  const totalBalance = await kit.getTotalBalance(kit.defaultAccount)
+  const cUSDBalance = totalBalance.cUSD.shiftedBy(-ERC20_DECIMALS).toFixed(2)
+  document.querySelector("#balance").textContent = cUSDBalance
+}
 
-// Function to retrieve books from the BookLibrary contract
 const getBooks = async function () {
-  const _booksLength = await contract.methods.getBooksLength().call();
-  const _books = [];
+  const _booksLength = await contract.methods.getBooksLength().call()
+  const _books = []
   for (let i = 0; i < _booksLength; i++) {
-    // Retrieve book details from the contract and create a Promise for each book
     let _book = new Promise(async (resolve, reject) => {
-      let p = await contract.methods.getBook(i).call();
+      let p = await contract.methods.getBook(i).call()
       resolve({
         index: i,
         owner: p[0],
@@ -72,27 +64,27 @@ const getBooks = async function () {
         price: new BigNumber(p[4]),
         sold: p[5],
         isRead: p[6],
-      });
-    });
-    _books.push(_book);
+      })
+    })
+    _books.push(_book)
   }
-  // Wait for all Promise objects to resolve and update the global books variable
-  books = await Promise.all(_books);
+  books = await Promise.all(_books)
 
-  // Render the updated books on the marketplace
-  renderbooks();
-};
+  renderbooks()
+}
 
-// Function to render books on the marketplace
 const renderbooks = async () => {
+  const undeletedbooks = books.filter(product => !product.deleted);
+
   document.getElementById("marketplace").innerHTML = "";
-  books.forEach((_book) => {
+  undeletedbooks.forEach(_book => {
     const newDiv = document.createElement("div");
     newDiv.className = "col-md-4";
     newDiv.innerHTML = productTemplate(_book);
     document.getElementById("marketplace").appendChild(newDiv);
   });
 };
+
 
 // Function to generate HTML template for a book
 function productTemplate(_book) {
